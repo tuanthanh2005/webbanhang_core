@@ -17,8 +17,10 @@ namespace webbanhang_core.Models
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Category>().HasData(
-                new Category { Id = 1, Name = "Tai Nghe", DisplayOrder = 1 },
-                new Category { Id = 2, Name = "LapTop", DisplayOrder = 2 }
+
+                new Category { Id = 1, Name = "Điện thoại", DisplayOrder = 1 },
+new Category { Id = 2, Name = "Máy tính bảng", DisplayOrder = 2 },
+new Category { Id = 3, Name = "Laptop", DisplayOrder = 3 }
             );
             modelBuilder.Entity<Product>().HasData(
                 new Product { Id = 1, Name = "Iphone 7", Price = 300, CategoryId = 1 },

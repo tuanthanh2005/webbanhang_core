@@ -1,0 +1,41 @@
+﻿@model List<Product>
+<div class="text-end">
+    <a asp-action="Add" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Add new
+    </a>
+</div>
+<table class="table table-bordered">
+    <tr>
+        <td>Name</td>
+        <td>Price</td>
+        <td>Category</td>
+        <td>Image</td>
+        <td>Aciton</td>
+     
+    </tr>
+    @* nhung c# de hien thi thong tin san pham *@
+    @foreach(var p in Model)
+    {
+        <tr>
+
+            <td>@p.Name</td>
+            <td>@p.Price</td>
+            <td>@p.Category.Name</td>
+            <td>
+                @if (p.ImageUrl != null)
+                {
+                    <img src="@p.ImageUrl" style="width:100px" />
+                }
+            </td>
+            <td>
+                <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-secondary">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </a>
+                <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Delete
+                </a>
+            </td>
+
+        </tr>
+    }
+</table>
