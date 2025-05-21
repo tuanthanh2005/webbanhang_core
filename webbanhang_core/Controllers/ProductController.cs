@@ -3,43 +3,50 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using webbanhang_core.Models;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace webbanhang_core.Controllers
 {
     public class ProductController : Controller
     {
-        /*
-         *các tác vụ
-         -liet ke san pham
-         -themsp
-         -sua sp
-         - xoa spq
-         Tạo ?? action:
-            + index: tra ve giao dien liet ke ds sp
-            + add: tra ve giao dien them moi san pham
-
-         */
-        private ApplicationDbContext _db;
+        private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _hosting;
+
         public ProductController(ApplicationDbContext db, IWebHostEnvironment hosting)
         {
             _db = db;
             _hosting = hosting;
         }
 
-        public IActionResult Index()
+        // Liệt kê danh sách sản phẩm
+        public IActionResult Index(int page = 1, int pageSize = 5)
         {
-            // doc tat ca cac san pham trong csdl
-            var dsSanPham = _db.products.Include(x => x.Category).ToList();
+            var totalItems = _db.products.Count();
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var dsSanPham = _db.products
+                .Include(x => x.Category)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
             return View(dsSanPham);
         }
-        // xóa sp
+
+
+        // Xóa sản phẩm - GET
         public IActionResult Delete(int id)
         {
             var sp = _db.products.Find(id);
+            if (sp == null) return NotFound();
             return View(sp);
         }
+
+        // Xóa sản phẩm - POST
+        [HttpPost]
+        [ActionName("DeleteConfirm")]
         public IActionResult DeleteConfirm(int id)
         {
             var product = _db.products.Find(id);
@@ -47,8 +54,9 @@ namespace webbanhang_core.Controllers
             {
                 return NotFound();
             }
-            // xoá hình cũ của sản phẩm
-            if (!String.IsNullOrEmpty(product.ImageUrl))
+
+            // Xóa hình cũ
+            if (!string.IsNullOrEmpty(product.ImageUrl))
             {
                 var oldFilePath = Path.Combine(_hosting.WebRootPath, product.ImageUrl);
                 if (System.IO.File.Exists(oldFilePath))
@@ -56,17 +64,14 @@ namespace webbanhang_core.Controllers
                     System.IO.File.Delete(oldFilePath);
                 }
             }
-            // xoa san pham khoi CSDL
+
             _db.products.Remove(product);
             _db.SaveChanges();
-            TempData["success"] = "Product deleted success";
-            //chuyen den action index
+            TempData["success"] = "Product deleted successfully!";
             return RedirectToAction("Index");
         }
-        /*
-            Add
-            Edit
-         */
+
+        // Giao diện thêm mới sản phẩm
         public IActionResult Add()
         {
             ViewBag.TLoai = _db.Categories.Select(x => new SelectListItem
@@ -77,57 +82,62 @@ namespace webbanhang_core.Controllers
 
             return View();
         }
+
+        // Xử lý thêm mới sản phẩm
         [HttpPost]
-        public IActionResult Add(Product p,IFormFile ImageUrl)
+        public IActionResult Add(Product p, IFormFile ImageUrl)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.TLoai = _db.Categories.Select(x => new SelectListItem
+                {
+                    Value = x.Id.ToString(),
+                    Text = x.Name
+                }).ToList();
+                return View(p);
+            }
+
             if (ImageUrl != null)
             {
-              p.ImageUrl= SaveImage(ImageUrl);
+                p.ImageUrl = SaveImage(ImageUrl);
             }
+
             _db.products.Add(p);
             _db.SaveChanges();
-            TempData["success"] = "Đã Thêm Sản Phẩm Thành Công!!!";
+            TempData["success"] = "Đã thêm sản phẩm thành công!";
             return RedirectToAction("Index");
         }
-        // xử lý uploads ảnh
-        private string SaveImage(IFormFile image)
-        {
-            //đặt lại tên file cần lưu
-            var filename = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-            //lay duong dan luu tru wwwroot tren server
-            var path = Path.Combine(_hosting.WebRootPath, @"images/products");// trong wwwroot
-            var saveFile = Path.Combine(path, filename);
-            using (var filestream = new FileStream(saveFile, FileMode.Create))
-            {
-                image.CopyTo(filestream);
-            }
-            return @"images/products/" + filename;
-        }
+
+        // Giao diện cập nhật sản phẩm
         public IActionResult Update(int id)
         {
-            // truy vấn cơ sở dữ liệu
             var product = _db.products.Find(id);
-            //truyền danh sách thể loại cho View để sinh ra điều khiển DropDownList
+            if (product == null) return NotFound();
+
             ViewBag.TLoai = _db.Categories.Select(x => new SelectListItem
             {
-
                 Value = x.Id.ToString(),
                 Text = x.Name
-            });
+            }).ToList();
+
             return View(product);
         }
-        //Xử lý cập nhật sản phẩm
+
+        // Xử lý cập nhật sản phẩm
         [HttpPost]
         public IActionResult Update(Product product, IFormFile ImageUrl)
         {
-          
-                var existingProduct = _db.products.Find(product.Id);
-                if (ImageUrl != null)
-                {
-                    //xu ly upload và lưu ảnh đại diện mới
-                    product.ImageUrl = SaveImage(ImageUrl);
-                // xóa ảnh cũ
-                if (!String.IsNullOrEmpty(existingProduct.ImageUrl))
+            var existingProduct = _db.products.Find(product.Id);
+            if (existingProduct == null)
+            {
+                return NotFound();
+            }
+
+            if (ImageUrl != null)
+            {
+                product.ImageUrl = SaveImage(ImageUrl);
+
+                if (!string.IsNullOrEmpty(existingProduct.ImageUrl))
                 {
                     var oldFilePath = Path.Combine(_hosting.WebRootPath, existingProduct.ImageUrl);
                     if (System.IO.File.Exists(oldFilePath))
@@ -136,19 +146,41 @@ namespace webbanhang_core.Controllers
                     }
                 }
             }
-                else
-                {
-                    product.ImageUrl = existingProduct.ImageUrl;
-                }
-                //cập nhật product vào table Product
-                existingProduct.Name = product.Name;
-                existingProduct.Description = product.Description;
-                existingProduct.Price = product.Price;
-                existingProduct.CategoryId = product.CategoryId;
-                existingProduct.ImageUrl = product.ImageUrl;
-                _db.SaveChanges();
-                TempData["success"] = "Product updated success";
+            else
+            {
+                product.ImageUrl = existingProduct.ImageUrl;
+            }
+
+            existingProduct.Name = product.Name;
+            existingProduct.Description = product.Description;
+            existingProduct.Price = product.Price;
+            existingProduct.CategoryId = product.CategoryId;
+            existingProduct.ImageUrl = product.ImageUrl;
+
+            _db.SaveChanges();
+            TempData["success"] = "Product updated successfully!";
             return RedirectToAction("Index");
+        }
+
+        // Lưu ảnh sản phẩm
+        private string SaveImage(IFormFile image)
+        {
+            var filename = Guid.NewGuid() + Path.GetExtension(image.FileName);
+            var path = Path.Combine(_hosting.WebRootPath, "images/products");
+
+            // Tạo thư mục nếu chưa tồn tại
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            var saveFile = Path.Combine(path, filename);
+            using (var filestream = new FileStream(saveFile, FileMode.Create))
+            {
+                image.CopyTo(filestream);
+            }
+
+            return "images/products/" + filename;
         }
     }
 }
