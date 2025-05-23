@@ -4,5 +4,51 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+<div class="row products">
+    <partial name="_ProductPartial" />
+</div>
+
+<div class="text-center mt-2">
+    <button id="btnLoadMore" class="btn btn-primary">Load more</button>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Thêm nếu chưa có -->
+    <script>
+        let currentPage = 2;
+        let isLoading = false;
+
+        // Định nghĩa hàm loadPage trước khi dùng
+        function loadPage(page) {
+            if (isLoading) return; // tránh gọi nhiều lần
+            isLoading = true;
+
+            $.ajax({
+                url: "/Home/LoadMore",
+                data: { page: page },
+                type: "GET",
+                success: function (data) {
+                    if (!data || $.trim(data) === '') {
+                        $("#btnLoadMore").hide();
+                    } else {
+                        $(".products").append(data);
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra khi tải dữ liệu.");
+                },
+                complete: function () {
+                    isLoading = false;
+                }
+            });
+        }
+
+        $("#btnLoadMore").click(function () {
+            loadPage(currentPage);
+            currentPage++;
+        });
+    </script>
+}

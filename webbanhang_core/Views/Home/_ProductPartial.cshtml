@@ -1,0 +1,36 @@
+﻿
+    <div class="row">
+        @foreach (var p in Model)
+        {
+            if (p == null) continue; // Bỏ qua nếu phần tử trong danh sách là null
+
+            <div class="col-md-4 mb-4">
+                <div class="card mb-3">
+                    <h3 class="card-header">@p.Name</h3>
+
+                    @if (!string.IsNullOrEmpty(p.ImageUrl))
+                    {
+                        <img src="@p.ImageUrl" class="img-fluid" alt="@p.Name" />
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="d-block user-select-none" width="100%" height="200" aria-label="Placeholder: Image cap" focusable="false" role="img">
+                            <rect width="100%" height="100%" fill="#868e96"></rect>
+                            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
+                        </svg>
+                    }
+
+                    <div class="card-body">
+                        <h5 class="card-title">Giá: <span>@p.Price</span></h5>
+                        <a href="#" class="card-link">Chi tiết</a>
+                        <a href="#" class="card-link">Thêm vào giỏ</a>
+                    </div>
+
+                    <div class="card-footer text-muted">
+                        2 ngày trước
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

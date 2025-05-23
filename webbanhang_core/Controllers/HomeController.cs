@@ -1,23 +1,34 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using webbanhang_core.Models;
-
+using System.Diagnostics;
+using System.Linq;
 namespace webbanhang_core.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private ApplicationDbContext _db;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext db)
         {
             _logger = logger;
+            _db = db;
         }
 
         public IActionResult Index()
         {
-            return View();
-        }
 
+            var pageSize = 3;
+            var dsSanPham = _db.products.ToList();
+            return View(dsSanPham.Skip((pageSize - 3) * pageSize).Take(pageSize).ToList());
+        }
+        public IActionResult LoadMore(int page = 1)
+        {
+            var pageSize = 3;
+            var dsSanPham = _db.products.ToList();
+            return PartialView("_ProductPartial", dsSanPham.Skip((page - 1) * pageSize).Take(pageSize).ToList());
+        }
         public IActionResult Privacy()
         {
             return View();
