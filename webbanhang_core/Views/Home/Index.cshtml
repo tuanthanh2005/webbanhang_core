@@ -4,51 +4,58 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p>
+        Learn about
+        <a href="https://docs.microsoft.com/aspnet/core" target="_blank" rel="noopener">building Web apps with ASP.NET Core</a>.
+    </p>
 </div>
 
 <div class="row products">
-    <partial name="_ProductPartial" />
+    @await Html.PartialAsync("_ProductPartial") <!-- Phải dùng async để partial render server-side -->
 </div>
 
-<div class="text-center mt-2">
+<div class="text-center mt-3">
     <button id="btnLoadMore" class="btn btn-primary">Load more</button>
 </div>
 
-@section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Thêm nếu chưa có -->
+@section Scripts{
+    <!-- Chỉ thêm jQuery nếu chưa có ở Layout -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        let currentPage = 2;
-        let isLoading = false;
+        $(document).ready(function () {
+            let currentPage = 2;
+            let isLoading = false;
 
-        // Định nghĩa hàm loadPage trước khi dùng
-        function loadPage(page) {
-            if (isLoading) return; // tránh gọi nhiều lần
-            isLoading = true;
+            function loadPage(page) {
+                if (isLoading) return;
 
-            $.ajax({
-                url: "/Home/LoadMore",
-                data: { page: page },
-                type: "GET",
-                success: function (data) {
-                    if (!data || $.trim(data) === '') {
-                        $("#btnLoadMore").hide();
-                    } else {
-                        $(".products").append(data);
+                isLoading = true;
+
+                $.ajax({
+                    url: '@Url.Action("LoadMore", "Home")',
+                    type: 'GET',
+                    data: { page: page },
+                    success: function (data) {
+                        if (!data || $.trim(data) === '') {
+                            $('#btnLoadMore').hide();
+                        } else {
+                            $('.products').append(data);
+                            currentPage++; // Chỉ tăng khi có dữ liệu
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Lỗi khi load dữ liệu:", status, error);
+                        alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
+                    },
+                    complete: function () {
+                        isLoading = false;
                     }
-                },
-                error: function () {
-                    alert("Có lỗi xảy ra khi tải dữ liệu.");
-                },
-                complete: function () {
-                    isLoading = false;
-                }
-            });
-        }
+                });
+            }
 
-        $("#btnLoadMore").click(function () {
-            loadPage(currentPage);
-            currentPage++;
+            $('#btnLoadMore').on('click', function () {
+                loadPage(currentPage);
+            });
         });
     </script>
 }

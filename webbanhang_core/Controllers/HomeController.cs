@@ -1,8 +1,9 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using webbanhang_core.Models;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 namespace webbanhang_core.Controllers
 {
     public class HomeController : Controller
@@ -20,13 +21,13 @@ namespace webbanhang_core.Controllers
         {
 
             var pageSize = 3;
-            var dsSanPham = _db.products.ToList();
+            var dsSanPham = _db.Products.ToList();
             return View(dsSanPham.Skip((pageSize - 3) * pageSize).Take(pageSize).ToList());
         }
         public IActionResult LoadMore(int page = 1)
         {
-            var pageSize = 3;
-            var dsSanPham = _db.products.ToList();
+            var pageSize = 4;
+            var dsSanPham = _db.Products.ToList();
             return PartialView("_ProductPartial", dsSanPham.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
         public IActionResult Privacy()

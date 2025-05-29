@@ -1,56 +1,55 @@
 ﻿@model List<Product>
 
 <partial name="Mess" />
-<div class="text-end">
+<div class="text-end mb-3">
     <a asp-action="Add" class="btn btn-success">
         <i class="bi bi-plus-circle"></i> Add new
     </a>
 </div>
-<table class="table table-bordered">
-    <tr>
-        <td>Name</td>
-        <td>Price</td>
-        <td>Category</td>
-        <td>Image</td>
-        <td>Aciton</td>
-     
-    </tr>
-    @* nhung c# de hien thi thong tin san pham *@
-    @foreach(var p in Model)
-    {
+<table class="table table-bordered table-hover text-center">
+    <thead class="table-dark">
         <tr>
-
-            <td>@p.Name</td>
-            <td>@p.Price</td>
-            <td>@p.Category.Name</td>
-            <td>
-                @if (p.ImageUrl != null)
-                {
-                    <img src="@p.ImageUrl" style="width:100px" />
-                }
-            </td>
-            <td>
-                <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-secondary">
-                    <i class="bi bi-pencil-square"></i> Edit
-                </a>
-                <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-danger">
-                    <i class="bi bi-trash"></i> Delete
-                </a>
-            </td>
-
+            <th>Name</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Image</th>
+            <th>Action</th>
         </tr>
-    }
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Name</td>
+                <td>@p.Price</td>
+                <td>@p.Category?.Name</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(p.ImageUrl))
+                    {
+                        <img src="@p.ImageUrl" style="width:100px" />
+                    }
+                </td>
+                <td>
+                    <a asp-action="Update" asp-route-id="@p.Id" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
+
 <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center">
-        <!-- Nút về trang đầu -->
         <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
             <a class="page-link" href="@Url.Action("Index", new { page = 1 })" aria-label="First">
                 <span aria-hidden="true">&laquo;</span>
             </a>
         </li>
 
-        <!-- Phân trang -->
         @for (int i = 1; i <= ViewBag.TotalPages; i++)
         {
             <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
@@ -58,7 +57,6 @@
             </li>
         }
 
-        <!-- Nút đến trang cuối -->
         <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
             <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.TotalPages })" aria-label="Last">
                 <span aria-hidden="true">&raquo;</span>
@@ -66,4 +64,3 @@
         </li>
     </ul>
 </nav>
-

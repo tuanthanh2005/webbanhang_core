@@ -1,13 +1,13 @@
 ﻿@model List<Category>
-<partial name="_Notification" />
+<partial name="Mess" />
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <h2>LIST CATEGORY</h2>
+        <h2>Danh sách thể loại</h2>
     </div>
     <div class="col-md-6 text-end">
         <a asp-action="Add" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Add New
+            <i class="bi bi-plus-circle"></i> Thêm mới
         </a>
     </div>
 </div>
@@ -15,11 +15,11 @@
 @if (Model != null && Model.Any())
 {
     <table class="table table-bordered table-striped">
-        <thead>
+        <thead class="table-dark">
             <tr>
-                <th>Name</th>
-                <th>Display Order</th>
-                <th>Action</th>
+                <th>Tên thể loại</th>
+                <th>Thứ tự hiển thị</th>
+                <th style="width: 180px;">Thao tác</th>
             </tr>
         </thead>
         <tbody>
@@ -29,11 +29,11 @@
                     <td>@category.Name</td>
                     <td>@category.DisplayOrder</td>
                     <td>
-                        <a asp-action="Update" asp-route-id="@category.Id" class="btn btn-success">
-                            <i class="bi bi-pencil-square"></i> Edit
+                        <a asp-action="Update" asp-route-id="@category.Id" class="btn btn-sm btn-success me-1">
+                            <i class="bi bi-pencil-square"></i> Sửa
                         </a>
-                        <a asp-action="DeleteConfirmed" asp-route-id="@category.Id" class="btn btn-danger xoa">
-                            <i class="bi bi-trash"></i> Delete
+                        <a href="@Url.Action("DeleteConfirmed", "Category", new { id = category.Id })" class="btn btn-sm btn-danger xoa">
+                            <i class="bi bi-trash"></i> Xóa
                         </a>
                     </td>
                 </tr>
@@ -43,26 +43,30 @@
 }
 else
 {
-    <p>Chưa có thể loại nào trong danh sách.</p>
+    <div class="alert alert-info">Chưa có thể loại nào trong danh sách.</div>
 }
 
 @section Scripts
 {
+    <!-- Nếu jQuery đã có ở _Layout.cshtml thì dòng sau có thể bỏ -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         $(document).ready(function () {
-            $(".xoa").on('click', function (evt) {
+            $(document).on('click', '.xoa', function (evt) {
                 evt.preventDefault();
-                var url = $(this).attr('href');
+
+                const url = $(this).attr('href');
+
                 Swal.fire({
-                    title: 'Bạn có chắc chắn muốn xóa thể loại này?',
-                    text: "Hành động này không thể hoàn tác!",
+                    title: 'Xác nhận xóa',
+                    text: "Bạn có chắc chắn muốn xóa thể loại này? Hành động không thể hoàn tác.",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Có, xóa nó!',
+                    confirmButtonText: 'Có, xóa!',
                     cancelButtonText: 'Hủy'
                 }).then((result) => {
                     if (result.isConfirmed) {

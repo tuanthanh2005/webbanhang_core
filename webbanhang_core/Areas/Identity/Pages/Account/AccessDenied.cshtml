@@ -1,0 +1,29 @@
+﻿@page
+@model AccessDeniedModel
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<webbanhang_core.Models.AppUser> _signInManager
+@inject UserManager<webbanhang_core.Models.AppUser> _userManager
+
+@{
+    ViewData["Title"] = "Access Denied";
+    var returnUrl = Url.Content("~/AdminDashboard");
+}
+
+<div class="text-center mt-5">
+    <h1 class="text-danger">Access Denied</h1>
+    <p class="text-danger">Bạn không có quyền truy cập. Vui lòng đăng nhập tài khoản Admin để tiếp tục.</p>
+
+    <hr />
+
+    <form method="post">
+        <div class="form-floating mb-3">
+            <input name="Email" class="form-control" placeholder="Email" required />
+            <label>Email</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input name="Password" type="password" class="form-control" placeholder="Mật khẩu" required />
+            <label>Mật khẩu</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Đăng nhập Admin</button>
+    </form>
+</div>

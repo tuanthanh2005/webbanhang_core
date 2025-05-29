@@ -93,7 +93,7 @@ namespace WebBanHang.Controllers
             {
                 return NotFound();
             }
-            if (_db.products.Where(x => x.CategoryId == category.Id).ToList().Count > 0)
+            if (_db.Products.Where(x => x.CategoryId == category.Id).ToList().Count > 0)
             {
                 TempData["error"] = "Đã có sản phẩm theo thể loại này. Không thể xoá";
                 return RedirectToAction("Index");

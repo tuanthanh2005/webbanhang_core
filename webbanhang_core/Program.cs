@@ -1,19 +1,61 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using webbanhang_core.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=DBBanHang"));
+// ✅ Kết nối DB
+var connectionString = builder.Configuration.GetConnectionString("DBBanHang")
+    ?? throw new InvalidOperationException("Connection string 'DBBanHang' not found.");
+builder.Services.AddTransient<IEmailSender, FakeEmailSender>();
 
+// ✅ Cấu hình DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// ✅ Identity (AppUser + Role)
+builder.Services.AddDefaultIdentity<AppUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false; // Cho phép login luôn
+})
+.AddRoles<IdentityRole>() // Thêm roles
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// ✅ Razor Pages + MVC
+builder.Services.AddRazorPages();
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ✅ Seed dữ liệu Roles + Gán role Admin cho user
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+
+    string[] roles = { "Admin", "Customer", "Employee" };
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // ✅ Gán role Admin cho user admin2@gmail.com
+    var adminUser = await userManager.FindByEmailAsync("admin2@gmail.com");
+    if (adminUser != null && !(await userManager.IsInRoleAsync(adminUser, "Admin")))
+    {
+        await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+}
+
+// ✅ Middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -22,8 +64,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

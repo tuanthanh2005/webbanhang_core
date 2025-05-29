@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using Microsoft.AspNetCore.Authorization; // 👈 Thêm namespace
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using webbanhang_core.Models;
 
 namespace webbanhang_core.Controllers
 {
+    [Authorize(Roles = "Admin")] // 👈 Chỉ Admin được truy cập toàn bộ controller
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _db;
@@ -20,10 +22,10 @@ namespace webbanhang_core.Controllers
         // Liệt kê danh sách sản phẩm
         public IActionResult Index(int page = 1, int pageSize = 5)
         {
-            var totalItems = _db.products.Count();
+            var totalItems = _db.Products.Count();
             var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-            var dsSanPham = _db.products
+            var dsSanPham = _db.Products
                 .Include(x => x.Category)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -35,11 +37,10 @@ namespace webbanhang_core.Controllers
             return View(dsSanPham);
         }
 
-
         // Xóa sản phẩm - GET
         public IActionResult Delete(int id)
         {
-            var sp = _db.products.Find(id);
+            var sp = _db.Products.Find(id);
             if (sp == null) return NotFound();
             return View(sp);
         }
@@ -49,13 +50,12 @@ namespace webbanhang_core.Controllers
         [ActionName("DeleteConfirm")]
         public IActionResult DeleteConfirm(int id)
         {
-            var product = _db.products.Find(id);
+            var product = _db.Products.Find(id);
             if (product == null)
             {
                 return NotFound();
             }
 
-            // Xóa hình cũ
             if (!string.IsNullOrEmpty(product.ImageUrl))
             {
                 var oldFilePath = Path.Combine(_hosting.WebRootPath, product.ImageUrl);
@@ -65,7 +65,7 @@ namespace webbanhang_core.Controllers
                 }
             }
 
-            _db.products.Remove(product);
+            _db.Products.Remove(product);
             _db.SaveChanges();
             TempData["success"] = "Product deleted successfully!";
             return RedirectToAction("Index");
@@ -102,7 +102,7 @@ namespace webbanhang_core.Controllers
                 p.ImageUrl = SaveImage(ImageUrl);
             }
 
-            _db.products.Add(p);
+            _db.Products.Add(p);
             _db.SaveChanges();
             TempData["success"] = "Đã thêm sản phẩm thành công!";
             return RedirectToAction("Index");
@@ -111,7 +111,7 @@ namespace webbanhang_core.Controllers
         // Giao diện cập nhật sản phẩm
         public IActionResult Update(int id)
         {
-            var product = _db.products.Find(id);
+            var product = _db.Products.Find(id);
             if (product == null) return NotFound();
 
             ViewBag.TLoai = _db.Categories.Select(x => new SelectListItem
@@ -127,7 +127,7 @@ namespace webbanhang_core.Controllers
         [HttpPost]
         public IActionResult Update(Product product, IFormFile ImageUrl)
         {
-            var existingProduct = _db.products.Find(product.Id);
+            var existingProduct = _db.Products.Find(product.Id);
             if (existingProduct == null)
             {
                 return NotFound();
@@ -166,9 +166,8 @@ namespace webbanhang_core.Controllers
         private string SaveImage(IFormFile image)
         {
             var filename = Guid.NewGuid() + Path.GetExtension(image.FileName);
-            var path = Path.Combine(_hosting.WebRootPath, "images/products");
+            var path = Path.Combine(_hosting.WebRootPath, "images/Products");
 
-            // Tạo thư mục nếu chưa tồn tại
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -180,7 +179,7 @@ namespace webbanhang_core.Controllers
                 image.CopyTo(filestream);
             }
 
-            return "images/products/" + filename;
+            return "images/Products/" + filename;
         }
     }
 }
