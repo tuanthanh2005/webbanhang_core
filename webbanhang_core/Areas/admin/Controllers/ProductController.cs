@@ -5,9 +5,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using webbanhang_core.Models;
 
-namespace webbanhang_core.Controllers
+namespace webbanhang_core.Areas.admin.Controllers
 {
-    [Authorize(Roles = "Admin")] // 👈 Chỉ Admin được truy cập toàn bộ controller
+    [Area("admin")]
+    [Authorize(Roles = "Admin")]
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _db;

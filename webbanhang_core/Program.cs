@@ -50,6 +50,12 @@ using (var scope = app.Services.CreateScope())
     {
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
+    var employeeUser = await userManager.FindByEmailAsync("vender3@gmail.com");
+    if (employeeUser != null && !(await userManager.IsInRoleAsync(employeeUser, "Employee")))
+    {
+        await userManager.AddToRoleAsync(employeeUser, "Employee");
+    }
+
 }
 
 // ✅ Middleware pipeline
@@ -67,9 +73,16 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapRazorPages();
+// ✅ Thêm route hỗ trợ Area (QUAN TRỌNG!)
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=AdminDashboard}/{action=Index}/{id?}");
+
+// ✅ Route mặc định
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapRazorPages();
 
 app.Run();

@@ -1,4 +1,9 @@
-﻿@model List<Product>
+﻿@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Admin Dashboard";
+}
+@using webbanhang_core.Models
+@model List<Product>
 
 <partial name="Mess" />
 <div class="text-end mb-3">

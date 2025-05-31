@@ -1,4 +1,5 @@
-﻿@model Product
+﻿@using webbanhang_core.Models
+@model Product
 
 <h2>Bạn có chắc chắn muốn xóa sản phẩm: @Model.Name?</h2>
 <form asp-action="DeleteConfirm" method="post">

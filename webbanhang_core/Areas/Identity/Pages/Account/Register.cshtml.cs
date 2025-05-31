@@ -10,11 +10,16 @@ namespace webbanhang_core.Areas.Identity.Pages.Account
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public RegisterModel(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public RegisterModel(
+            UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager,
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
         }
 
         [BindProperty]
@@ -47,6 +52,10 @@ namespace webbanhang_core.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
+
+            [Required(ErrorMessage = "Vui lòng chọn vai trò")]
+            [Display(Name = "Vai trò")]
+            public string Role { get; set; }
         }
 
         public void OnGet(string returnUrl = null)
@@ -68,9 +77,17 @@ namespace webbanhang_core.Areas.Identity.Pages.Account
                 };
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
-
                 if (result.Succeeded)
                 {
+                    // Gán Role cho User
+                    if (!await _roleManager.RoleExistsAsync(Input.Role))
+                    {
+                        // Nếu role chưa có, tạo mới
+                        await _roleManager.CreateAsync(new IdentityRole(Input.Role));
+                    }
+                    await _userManager.AddToRoleAsync(user, Input.Role);
+
+                    // Đăng nhập luôn (tùy)
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect(returnUrl);
                 }
@@ -81,6 +98,7 @@ namespace webbanhang_core.Areas.Identity.Pages.Account
                 }
             }
 
+            // Nếu có lỗi ➜ hiển thị lại form
             return Page();
         }
     }

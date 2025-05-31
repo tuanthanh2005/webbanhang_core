@@ -1,12 +1,16 @@
 ﻿using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using webbanhang_core.Models;
 
-namespace WebBanHang.Controllers
+namespace webbanhang_core.Areas.employee.Controllers
 {
+    [Area("employee")]
+    [Authorize(Roles = "Employee")]
     public class CategoryController : Controller
     {
+
         private readonly ApplicationDbContext _db;
         public CategoryController(ApplicationDbContext db)
         {

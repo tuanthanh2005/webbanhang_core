@@ -88,30 +88,32 @@ namespace webbanhang_core.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User logged in.");
 
-                    // ➜ Kiểm tra role để điều hướng
+                    // Lấy user và role
                     var user = await _userManager.FindByEmailAsync(Input.Email);
                     var roles = await _userManager.GetRolesAsync(user);
 
+                    // 🚀 BẮT ĐẦU: Phần cần sửa
                     if (roles.Contains("Admin"))
                     {
-                        // Điều hướng về AdminDashboard
-                        return RedirectToAction("Index", "AdminDashboard");
-                    }
-                    else if (roles.Contains("Customer"))
-                    {
-                        // Điều hướng về CustomerDashboard
-                        return RedirectToAction("Index", "CustomerDashboard");
+                        // Điều hướng về AdminDashboard (trong Area admin)
+                        return RedirectToAction("Index", "AdminDashboard", new { area = "admin" });
                     }
                     else if (roles.Contains("Employee"))
                     {
-                        // Điều hướng về EmployeeDashboard
-                        return RedirectToAction("Index", "EmployeeDashboard");
+                        // Điều hướng về Category (trong Area admin)
+                        return RedirectToAction("Index", "Category", new { area = "employee" });
+                    }
+                    else if (roles.Contains("Customer"))
+                    {
+                        // Điều hướng về Home (không Area)
+                        return RedirectToAction("Index", "Home");
                     }
                     else
                     {
-                        // Không có role ➜ về Home
+                        // Mặc định: nếu không có role ➜ về Home
                         return LocalRedirect(returnUrl);
                     }
+                    // 🚀 KẾT THÚC: Phần cần sửa
                 }
 
                 if (result.RequiresTwoFactor)
